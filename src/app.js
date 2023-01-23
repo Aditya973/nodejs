@@ -50,13 +50,53 @@ app.get('/api/customers',async (req,res)=>{
     }
 });
 
+app.get('/api/customers/:id/test',async(req,res)=>{
+    res.json({reqParams : req.params,
+    reqQuery : req.query});
+});
+
+app.get('/api/customers/:id',async(req,res)=>{
+    console.log({
+        reqParams:req.params,
+        reqQuery:req.query
+    });
+    try{
+        const customerId = req.params.id;
+        // const {id:customerId} = req.params;
+        console.log(customerId);
+        const customer = await Customer.findById(customerId);
+        console.log(customer);
+        if(!customer){
+            res.status(404).json({error:"User Not Found"});
+        }
+        else{
+            res.json({customer});
+        }
+    }
+    catch(e){
+        res.status(500).json({error:'something went wrong'});
+    }
+});
+
 app.post('/',(req,res)=>{
     res.send("This is a post request!");
 });
 
-app.post('/api/customers',(req,res)=>{
+app.post('/api/customers',async(req,res)=>{
     console.log(req.body);
-    res.send(req.body);
+    // const customer = new Customer(req.body); // short hand for one give below but property that is not in schema while not be stored
+    const customer = new Customer({
+        name : req.body.name,
+        industry : req.body.industry
+    });
+    try{
+        await customer.save();
+        res.status(201).json({customer});
+    }
+    catch(e){
+        res.status(200).json({error:e.message});
+    }
+    // res.send(req.body);
 });
 
 
